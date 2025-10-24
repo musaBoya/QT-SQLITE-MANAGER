@@ -69,7 +69,7 @@ bool Database::createTables() {
     return true;
 }
 
-bool Database::insertUser(const QString& IDx, const QString& name, const QString& surname, const QString& age)  {
+QString Database::insertUser(const QString& IDx, const QString& name, const QString& surname, const QString& age)  {
     QSqlQuery query(db);
     query.prepare("INSERT INTO users (IDx, name, surname, age) VALUES (:IDx, :name, :surname, :age)");
     query.bindValue(":IDx", IDx);
@@ -79,11 +79,11 @@ bool Database::insertUser(const QString& IDx, const QString& name, const QString
 
     if (!query.exec()) {
         qDebug() << "Kullanıcı eklenemedi:" << query.lastError().text();
-        return false;
+        return query.lastError().text();
     }
 
     qDebug() << "Kullanıcı eklendi:" << name;
-    return true;
+    return "DB_OK";
 }
 
 bool Database::updateUser(int id, const QString& name, const QString& age) {

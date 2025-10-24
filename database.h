@@ -21,7 +21,7 @@ public:
     bool createTables();
 
     // CRUD işlemleri - User tablosu örneği
-    bool insertUser(const QString& IDx, const QString& name, const QString& surname, const QString& age);
+    QString insertUser(const QString& IDx, const QString& name, const QString& surname, const QString& age);
     bool updateUser(int id, const QString& name, const QString& age);
     bool deleteUser(int id);
     QSqlQuery getAllUsers();
@@ -48,6 +48,13 @@ private:
 
     QSqlDatabase db;
     QString connectionName;
+};
+
+struct user{
+    QString idx;
+    QString name;
+    QString surname;
+    QString age;
 };
 
 #endif // DATABASE_H

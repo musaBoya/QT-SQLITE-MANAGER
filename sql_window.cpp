@@ -99,43 +99,53 @@ QGridLayout* MainWindow::initializeInputs(){
 }
 
 void MainWindow::onSaveClicked() {
+    user newUser{IDBox->text(), nameBox->text(), surnameBox->text(), ageBox->text()};
 
-    int newRow = tableWidget->rowCount();
-    tableWidget->insertRow(newRow);
-    tableWidget->setItem(newRow, 0, new QTableWidgetItem(IDBox->text()));
-    tableWidget->setItem(newRow, 1, new QTableWidgetItem(nameBox->text()));
-    tableWidget->setItem(newRow, 2, new QTableWidgetItem(surnameBox->text()));
-    tableWidget->setItem(newRow, 3, new QTableWidgetItem(ageBox->text()));
-
-    tableWidget->setAlternatingRowColors(true); // Alternatif satır renkleri
-    tableWidget->resizeColumnsToContents(); // Sütun genişliklerini içeriğe göre ayarla
-
-    if (Database::instance().insertUser(IDBox->text(),nameBox->text(), surnameBox->text(), ageBox->text())) {
+    if (QString retDB = Database::instance().insertUser(newUser.idx, newUser.name, newUser.surname, newUser.age);
+                retDB == "DB_OK") {
             QMessageBox::information(this, "Başarılı", "Kullanıcı kaydedildi!");
             //loadUsers(); // Listeyi güncelle
         } else {
-            QMessageBox::critical(this, "Hata", "Kullanıcı kaydedilemedi!");
+            QMessageBox::critical(this, "Hata", "Kullanıcı kaydedilemedi!\nRetcode: " + retDB);
+            return;
         }
 
+    int newRow = tableWidget->rowCount();
+    tableWidget->insertRow(newRow);
 
-    QString inputText = IDBox->text();
+    tableWidget->setItem(newRow, 0, new QTableWidgetItem(newUser.idx));
+    tableWidget->setItem(newRow, 1, new QTableWidgetItem(newUser.name));
+    tableWidget->setItem(newRow, 2, new QTableWidgetItem(newUser.surname));
+    tableWidget->setItem(newRow, 3, new QTableWidgetItem(newUser.age));
 
-    inputText.append("\n- ");
-    inputText.append(nameBox->text());
-    inputText.append("\n- ");
-    inputText.append(surnameBox->text());
-    inputText.append("\n- ");
-    inputText.append(ageBox->text());
+    tableWidget->setAlternatingRowColors(true); // Alternatif satır renkleri
+    //tableWidget->resizeColumnsToContents(); // Sütun genişliklerini içeriğe göre ayarla
 
+
+    QString inputText = newUser.idx + "\n- " + newUser.name + "\n- " +
+                        newUser.surname + "\n- " + newUser.age;
     statusDisplay->setText(inputText);
-    //std::cout << "saved text is: " << inputText.toStdString() << std::endl;
 }
 void MainWindow::onListClicked() {
-    auto inputText = statusDisplay->text().toStdString();
-    //statusDisplay->setText("List button comming soon!");
+    std::cout <<"[MUSA DEBUG] LIST CLICKED\n";
     QSqlQuery userbuf = Database::instance().getAllUsers();
-    auto strbuf = userbuf.value("users");
-    statusDisplay->setText(strbuf.toString());
+    tableWidget->clearContents();
+    auto sizerow = tableWidget->rowCount();
+    for(;sizerow > 0; --sizerow){
+        tableWidget->removeRow(sizerow - 1);
+    }
+    while (userbuf.next()) {
+        QString country = userbuf.value(2).toString();
+        user newUser{userbuf.value(1).toString(), userbuf.value(2).toString(), userbuf.value(3).toString(), userbuf.value(4).toString()};
+
+        int newRow = tableWidget->rowCount();
+        tableWidget->insertRow(newRow);
+        tableWidget->setItem(newRow, 0, new QTableWidgetItem(newUser.idx));
+        tableWidget->setItem(newRow, 1, new QTableWidgetItem(newUser.name));
+        tableWidget->setItem(newRow, 2, new QTableWidgetItem(newUser.surname));
+        tableWidget->setItem(newRow, 3, new QTableWidgetItem(newUser.age));
+        std::cout << "[MUSA DEBUG] LIST -|" << country.toStdString()<< "|-\n";
+    }
 }
 void MainWindow::onDeleteClicked() {
     auto inputText = statusDisplay->text().toStdString();

@@ -127,7 +127,6 @@ void MainWindow::onSaveClicked() {
     statusDisplay->setText(inputText);
 }
 void MainWindow::onListClicked() {
-    std::cout <<"[MUSA DEBUG] LIST CLICKED\n";
     QSqlQuery userbuf = Database::instance().getAllUsers();
     tableWidget->clearContents();
     auto sizerow = tableWidget->rowCount();
@@ -144,7 +143,6 @@ void MainWindow::onListClicked() {
         tableWidget->setItem(newRow, 1, new QTableWidgetItem(newUser.name));
         tableWidget->setItem(newRow, 2, new QTableWidgetItem(newUser.surname));
         tableWidget->setItem(newRow, 3, new QTableWidgetItem(newUser.age));
-        std::cout << "[MUSA DEBUG] LIST -|" << country.toStdString()<< "|-\n";
     }
 }
 void MainWindow::onDeleteClicked() {

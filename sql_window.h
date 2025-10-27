@@ -6,6 +6,8 @@
 #include <QPushButton>
 #include <QTableWidget>
 #include <QGridLayout>
+#include "database.h"
+
 constexpr const char* SAVE_BUTTON   = "Save";
 constexpr const char* LIST_BUTTON   = "List";
 constexpr const char* DELETE_BUTTON = "Delete";
@@ -23,6 +25,7 @@ private:
     QTableWidget *tableWidget;
     QGridLayout* initializeInputs();
     void onSaveClicked();
+    bool checkIsSaveValid(user input);
     void onListClicked();
     void onDeleteClicked();
     QTableWidget* initializeTable();

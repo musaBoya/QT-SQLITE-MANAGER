@@ -98,8 +98,32 @@ QGridLayout* MainWindow::initializeInputs(){
     return inputGridLayout;
 }
 
+bool MainWindow::checkIsSaveValid(user input){
+
+    if (input.idx.isEmpty()){
+        statusDisplay->setText("idx empty!");
+        return false;
+    }
+    if (input.name.isEmpty()){
+        statusDisplay->setText("name empty!");
+        return false;
+    }
+    if (input.surname.isEmpty()){
+        statusDisplay->setText("surname empty!");
+        return false;
+    }
+    if (input.age.isEmpty()){
+        statusDisplay->setText("age empty!");
+        return false;
+    }
+    return true;
+}
+
 void MainWindow::onSaveClicked() {
     user newUser{IDBox->text(), nameBox->text(), surnameBox->text(), ageBox->text()};
+    if(!checkIsSaveValid(newUser)){
+        return;
+    }
 
     if (QString retDB = Database::instance().insertUser(newUser.idx, newUser.name, newUser.surname, newUser.age);
                 retDB == "DB_OK") {

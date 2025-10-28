@@ -56,7 +56,7 @@ MainWindow::MainWindow(QWidget *parent)
 QTableWidget* MainWindow::initializeTable(){
     tableWidget = new QTableWidget(0, 4);
     QStringList headers;
-    headers << "ID" << "İsim" << "Soyisim" << "Yaş";
+    headers << "ID" << "Name" << "Surname" << "Age";
     tableWidget->setHorizontalHeaderLabels(headers);
     return tableWidget;
 }
@@ -73,7 +73,7 @@ QGridLayout* MainWindow::initializeInputs(){
     inputGridLayout->addWidget(IDBox, 0, 1);   // satır 0, sütun 1
 
     // İsim satırı
-    QLabel *nameLabel = new QLabel("İsim:");
+    QLabel *nameLabel = new QLabel("Name:");
     nameBox = new QLineEdit();
     nameBox->setMinimumHeight(35); // Daha küçük yükseklik
 
@@ -81,7 +81,7 @@ QGridLayout* MainWindow::initializeInputs(){
     inputGridLayout->addWidget(nameBox, 1, 1);   // satır 1, sütun 1
 
     // Soyisim satırı
-    QLabel *surnameLabel = new QLabel("Soyisim:");
+    QLabel *surnameLabel = new QLabel("Surname:");
     surnameBox = new QLineEdit();
     surnameBox->setMinimumHeight(35);
 
@@ -89,7 +89,7 @@ QGridLayout* MainWindow::initializeInputs(){
     inputGridLayout->addWidget(surnameBox, 2, 1);   // satır 2, sütun 1
 
 
-    QLabel *ageLabel = new QLabel("Yaş:");
+    QLabel *ageLabel = new QLabel("Age:");
     ageBox = new QLineEdit();
     ageBox->setMinimumHeight(35);
 
@@ -124,13 +124,14 @@ void MainWindow::onSaveClicked() {
     if(!checkIsSaveValid(newUser)){
         return;
     }
+    IDBox->clear();nameBox->clear();surnameBox->clear();ageBox->clear();
 
     if (QString retDB = Database::instance().insertUser(newUser.idx, newUser.name, newUser.surname, newUser.age);
                 retDB == "DB_OK") {
-            QMessageBox::information(this, "Başarılı", "Kullanıcı kaydedildi!");
+            QMessageBox::information(this, "Success", "User saved!");
             //loadUsers(); // Listeyi güncelle
         } else {
-            QMessageBox::critical(this, "Hata", "Kullanıcı kaydedilemedi!\nRetcode: " + retDB);
+            QMessageBox::critical(this, "Error", "User is not saved!\nRetcode: " + retDB);
             return;
         }
 
@@ -146,7 +147,7 @@ void MainWindow::onSaveClicked() {
     //tableWidget->resizeColumnsToContents(); // Sütun genişliklerini içeriğe göre ayarla
 
 
-    QString inputText = newUser.idx + "\n- " + newUser.name + "\n- " +
+    QString inputText = "Saved -> " + newUser.idx + "\n- " + newUser.name + "\n- " +
                         newUser.surname + "\n- " + newUser.age;
     statusDisplay->setText(inputText);
 }

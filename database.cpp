@@ -23,18 +23,18 @@ bool Database::connect(const QString& dbPath) {
     }
 
     if (!db.open()) {
-        qDebug() << "Veritabanı açılamadı:" << db.lastError().text();
+        qDebug() << "Could not open database:" << db.lastError().text();
         return false;
     }
 
-    qDebug() << "Veritabanı bağlantısı başarılı:" << dbPath;
+    qDebug() << "Database connection successful:" << dbPath;
     return createTables();
 }
 
 void Database::disconnect() {
     if (db.isOpen()) {
         db.close();
-        qDebug() << "Veritabanı bağlantısı kapatıldı";
+        qDebug() << "Database connection closed.";
     }
 }
 
@@ -45,11 +45,11 @@ bool Database::isConnected() const {
 bool Database::createTables() {
     QSqlQuery query(db);
 
-    // Users tablosu
+    // Users table
     QString createUsersTable = R"(
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            IDx TEXT NOT NULL,
+            companyID TEXT NOT NULL,
             name TEXT NOT NULL UNIQUE,
             surname TEXT NOT NULL,
             age TEXT NOT NULL,
@@ -58,31 +58,32 @@ bool Database::createTables() {
     )";
 
     if (!query.exec(createUsersTable)) {
-        qDebug() << "Users tablosu oluşturulamadı:" << query.lastError().text();
+        qDebug() << "Could not create Users table:" << query.lastError().text();
         return false;
     }
 
-    // Diğer tablolar buraya eklenebilir
-    // örneğin: products, orders, vb.
+    // Other tables can be added here
+    // for example: products, orders, etc.
 
-    qDebug() << "Tablolar başarıyla oluşturuldu";
+    qDebug() << "Tables created successfully";
     return true;
 }
 
-QString Database::insertUser(const QString& IDx, const QString& name, const QString& surname, const QString& age)  {
+QString Database::insertUser(const QString& companyID, const QString& name, const QString& surname, const QString& age)  {
     QSqlQuery query(db);
-    query.prepare("INSERT INTO users (IDx, name, surname, age) VALUES (:IDx, :name, :surname, :age)");
-    query.bindValue(":IDx", IDx);
+    query.prepare("INSERT INTO users (companyID, name, surname, age) VALUES (:companyID, :name, :surname, :age)");
+    query.bindValue(":companyID", companyID);
     query.bindValue(":name", name);
     query.bindValue(":surname", surname);
     query.bindValue(":age", age);
 
     if (!query.exec()) {
-        qDebug() << "Kullanıcı eklenemedi:" << query.lastError().text();
+        qDebug() << "User cannot added:" << query.lastError().text();
+        qDebug() << "User info:" << companyID << "-"<< name << "-"<< surname << "-"<< age;
         return query.lastError().text();
     }
 
-    qDebug() << "Kullanıcı eklendi:" << name;
+    qDebug() << "User added:" << name;
     return "DB_OK";
 }
 
@@ -94,26 +95,26 @@ bool Database::updateUser(int id, const QString& name, const QString& age) {
     query.bindValue(":id", id);
 
     if (!query.exec()) {
-        qDebug() << "Kullanıcı güncellenemedi:" << query.lastError().text();
+        qDebug() << "Could not update user:" << query.lastError().text();
         return false;
     }
 
-    qDebug() << "Kullanıcı güncellendi: ID" << id;
+    qDebug() << "User updated: ID" << id;
     return true;
 }
 
-bool Database::deleteUser(int id) {
+QString Database::deleteUser(int id) {
     QSqlQuery query(db);
     query.prepare("DELETE FROM users WHERE id = :id");
     query.bindValue(":id", id);
 
     if (!query.exec()) {
-        qDebug() << "Kullanıcı silinemedi:" << query.lastError().text();
-        return false;
+        qDebug() << "Could not delete user:" << query.lastError().text();
+        return query.lastError().text();
     }
 
-    qDebug() << "Kullanıcı silindi: ID" << id;
-    return true;
+    qDebug() << "User deleted: ID" << id;
+    return "DB_OK";
 }
 
 QSqlQuery Database::getAllUsers() {
@@ -127,6 +128,17 @@ QSqlQuery Database::getUserById(int id) {
     query.prepare("SELECT * FROM users WHERE id = :id");
     query.bindValue(":id", id);
     query.exec();
+    return query;
+}
+QSqlQuery Database::getUserByCompanyID(const QString companyID) {
+    QSqlQuery query(db);
+    query.prepare("SELECT * FROM users WHERE companyID = :companyID");
+    query.bindValue(":companyID", companyID);
+
+    if (!query.exec()) {
+        qDebug() << "Query failed:" << query.lastError().text();
+    }
+    
     return query;
 }
 
@@ -147,7 +159,7 @@ QSqlQuery Database::executeQuery(const QString& query) {
 bool Database::executeNonQuery(const QString& query) {
     QSqlQuery sqlQuery(db);
     if (!sqlQuery.exec(query)) {
-        qDebug() << "Sorgu çalıştırılamadı:" << sqlQuery.lastError().text();
+        qDebug() << "The query could not be run:" << sqlQuery.lastError().text();
         return false;
     }
     return true;

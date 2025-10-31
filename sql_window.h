@@ -17,18 +17,21 @@ class MainWindow : public QWidget {
 public:
     MainWindow(QWidget *parent = nullptr);
 private:
-    QLineEdit *IDBox;
+    QLineEdit *companyIDBox;
     QLineEdit *nameBox;
     QLineEdit *surnameBox;
     QLineEdit *ageBox;
     QLineEdit *statusDisplay;
     QTableWidget *tableWidget;
     QGridLayout* initializeInputs();
+    bool refreshList();
     void onSaveClicked();
     bool checkIsSaveValid(user input);
     void onListClicked();
     void onDeleteClicked();
+    QGridLayout* initializeButtons();
     QTableWidget* initializeTable();
+    struct ValidationRule;
 };
 
 #endif // SQL_WINDOW_H

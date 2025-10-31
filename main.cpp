@@ -5,7 +5,8 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    // Veritabanını başlat
+
+    // Start database
     if (!Database::instance().connect("myapp.db")) {
         qCritical() << "Database initialization failed!";
         return -1;

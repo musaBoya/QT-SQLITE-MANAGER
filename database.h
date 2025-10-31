@@ -12,32 +12,33 @@ class Database {
 public:
     static Database& instance();
 
-    // Veritabanı bağlantı yönetimi
+    // Database connection management
     bool connect(const QString& dbPath = "myapp.db");
     void disconnect();
     bool isConnected() const;
 
-    // Tablo oluşturma
+    // Table creation
     bool createTables();
 
-    // CRUD işlemleri - User tablosu örneği
-    QString insertUser(const QString& IDx, const QString& name, const QString& surname, const QString& age);
+    // CRUD operations - User table example
+    QString insertUser(const QString& companyID, const QString& name, const QString& surname, const QString& age);
     bool updateUser(int id, const QString& name, const QString& age);
-    bool deleteUser(int id);
+    QString deleteUser(int id);
     QSqlQuery getAllUsers();
     QSqlQuery getUserById(int id);
+    QSqlQuery getUserByCompanyID(const QString companyID);
     QSqlQuery getUserByUsername(const QString& name);
 
-    // Genel sorgu çalıştırma
+    // Run a general query
     QSqlQuery executeQuery(const QString& query);
     bool executeNonQuery(const QString& query);
 
-    // Transaction yönetimi
+    // Transaction management
     bool beginTransaction();
     bool commit();
     bool rollback();
 
-    // Hata yönetimi
+    // Error management
     QString lastError() const;
 
 private:
@@ -51,7 +52,7 @@ private:
 };
 
 struct user{
-    QString idx;
+    QString companyID;
     QString name;
     QString surname;
     QString age;

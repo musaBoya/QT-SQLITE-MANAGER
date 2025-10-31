@@ -24,7 +24,7 @@ private:
     QLineEdit *statusDisplay;
     QTableWidget *tableWidget;
     QGridLayout* initializeInputs();
-    bool refreshList();
+    void refreshDBList();
     void onSaveClicked();
     bool checkIsSaveValid(user input);
     void onListClicked();

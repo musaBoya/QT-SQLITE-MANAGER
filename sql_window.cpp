@@ -26,7 +26,7 @@ MainWindow::MainWindow(QWidget *parent)
     mainLayout->addWidget(initializeTable());
 
     setLayout(mainLayout);
-    refreshList();
+    refreshDBList();
 }
 
 QGridLayout* MainWindow::initializeButtons(){
@@ -144,7 +144,7 @@ void MainWindow::onSaveClicked() {
     
     if (retDB == "DB_OK") {
         QMessageBox::information(this, "Success", "User saved!");
-        refreshList();
+        refreshDBList();
     } else {
         QMessageBox::critical(this, "Error", "User is not saved!\nRetcode: " + retDB);
         return;
@@ -156,7 +156,7 @@ void MainWindow::onListClicked() {
     if (tableWidget->rowCount() == 0){
         statusDisplay->setText("Db is empty.");
     }
-    refreshList();
+    refreshDBList();
 }
 
 void MainWindow::onDeleteClicked() {
@@ -165,9 +165,13 @@ void MainWindow::onDeleteClicked() {
         return;
     }
 
-    auto slctedTopRow = tableWidget->selectedRanges().takeAt(0).topRow();
-    auto bottomRow = tableWidget->selectedRanges().takeAt(0).bottomRow();
-    auto itemCompanyId = tableWidget->takeItem(slctedTopRow,0)->text();
+    auto selectedTopRow = tableWidget->selectedRanges().takeAt(0).topRow();
+    auto selectedBottomRow = tableWidget->selectedRanges().takeAt(0).bottomRow();
+    if (selectedBottomRow - selectedTopRow > 0) {
+        statusDisplay->setText("multiple selection will add");
+        return;
+    }
+    auto itemCompanyId = tableWidget->takeItem(selectedTopRow,0)->text();
 
     QSqlQuery getuser = Database::instance().getUserByCompanyID(itemCompanyId);
     QString usersdata;
@@ -178,7 +182,7 @@ void MainWindow::onDeleteClicked() {
     const QString retDB = Database::instance().deleteUser(usersdata.toInt());
     if (retDB == "DB_OK") {
         QMessageBox::information(this, "Success", "User deleted!");
-        refreshList();
+        refreshDBList();
     } else {
         QMessageBox::critical(this, "Error", "User is not deleted!\nRetcode: " + retDB);
         return;
@@ -187,7 +191,7 @@ void MainWindow::onDeleteClicked() {
                            "-"+ getuser.value(3).toString() + "-"+ getuser.value(4).toString() + "|-");
 }
 
-bool MainWindow::refreshList() {
+void MainWindow::refreshDBList() {
     QSqlQuery userbuf = Database::instance().getAllUsers();
     tableWidget->clearContents();
     auto sizerow = tableWidget->rowCount();

@@ -69,7 +69,7 @@ bool Database::createTables() {
     return true;
 }
 
-QString Database::insertUser(const QString& companyID, const QString& name, const QString& surname, const QString& age)  {
+bool Database::insertUser(const QString& companyID, const QString& name, const QString& surname, const QString& age)  {
     QSqlQuery query(db);
     query.prepare("INSERT INTO users (companyID, name, surname, age) VALUES (:companyID, :name, :surname, :age)");
     query.bindValue(":companyID", companyID);
@@ -80,17 +80,17 @@ QString Database::insertUser(const QString& companyID, const QString& name, cons
     if (!query.exec()) {
         qDebug() << "User cannot added:" << query.lastError().text();
         qDebug() << "User info:" << companyID << "-"<< name << "-"<< surname << "-"<< age;
-        return query.lastError().text();
+        return false;
     }
 
     qDebug() << "User added:" << name;
-    return "DB_OK";
+    return true;
 }
 
 bool Database::updateUser(int id, const QString& name, const QString& age) {
     QSqlQuery query(db);
-    query.prepare("UPDATE users SET username = :username, email = :email WHERE id = :id");
-    query.bindValue(":username", name);
+    query.prepare("UPDATE users SET name = :name, age = :age WHERE id = :id");
+    query.bindValue(":name", name);
     query.bindValue(":age", age);
     query.bindValue(":id", id);
 
@@ -103,18 +103,18 @@ bool Database::updateUser(int id, const QString& name, const QString& age) {
     return true;
 }
 
-QString Database::deleteUser(int id) {
+bool Database::deleteUser(int id) {
     QSqlQuery query(db);
     query.prepare("DELETE FROM users WHERE id = :id");
     query.bindValue(":id", id);
 
     if (!query.exec()) {
         qDebug() << "Could not delete user:" << query.lastError().text();
-        return query.lastError().text();
+        return false;
     }
 
     qDebug() << "User deleted: ID" << id;
-    return "DB_OK";
+    return true;
 }
 
 QSqlQuery Database::getAllUsers() {
@@ -152,7 +152,9 @@ QSqlQuery Database::getUserByUsername(const QString& username) {
 
 QSqlQuery Database::executeQuery(const QString& query) {
     QSqlQuery sqlQuery(db);
-    sqlQuery.exec(query);
+    if (!sqlQuery.exec(query)) {
+        qDebug() << "The query could not be run:" << sqlQuery.lastError().text();
+    }
     return sqlQuery;
 }
 

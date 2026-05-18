@@ -21,9 +21,9 @@ public:
     bool createTables();
 
     // CRUD operations - User table example
-    QString insertUser(const QString& companyID, const QString& name, const QString& surname, const QString& age);
+    bool insertUser(const QString& companyID, const QString& name, const QString& surname, const QString& age);
     bool updateUser(int id, const QString& name, const QString& age);
-    QString deleteUser(int id);
+    bool deleteUser(int id);
     QSqlQuery getAllUsers();
     QSqlQuery getUserById(int id);
     QSqlQuery getUserByCompanyID(const QString companyID);
@@ -49,13 +49,6 @@ private:
 
     QSqlDatabase db;
     QString connectionName;
-};
-
-struct user{
-    QString companyID;
-    QString name;
-    QString surname;
-    QString age;
 };
 
 #endif // DATABASE_H

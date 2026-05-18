@@ -8,6 +8,13 @@
 #include <QGridLayout>
 #include "database.h"
 
+struct user {
+    QString companyID;
+    QString name;
+    QString surname;
+    QString age;
+};
+
 constexpr const char* SAVE_BUTTON   = "Save";
 constexpr const char* LIST_BUTTON   = "List";
 constexpr const char* DELETE_BUTTON = "Delete";

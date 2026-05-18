@@ -1,11 +1,11 @@
 #include "sql_window.h"
 #include "database.h"
-#include <iostream>
 #include <QVBoxLayout>
 #include <QFont>
 #include <QLabel>
 #include <QTableWidget>
 #include <QMessageBox>
+#include <QSqlRecord>
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent) {
@@ -140,13 +140,13 @@ void MainWindow::onSaveClicked() {
         return;
     }
 
-    const QString retDB =Database::instance().insertUser(newUser.companyID, newUser.name, newUser.surname, newUser.age); 
-    
-    if (retDB == "DB_OK") {
+    const bool ok = Database::instance().insertUser(newUser.companyID, newUser.name, newUser.surname, newUser.age);
+
+    if (ok) {
         QMessageBox::information(this, "Success", "User saved!");
         refreshDBList();
     } else {
-        QMessageBox::critical(this, "Error", "User is not saved!\nRetcode: " + retDB);
+        QMessageBox::critical(this, "Error", "User is not saved!\n" + Database::instance().lastError());
         return;
     }
     companyIDBox->clear();nameBox->clear();surnameBox->clear();ageBox->clear();
@@ -160,49 +160,58 @@ void MainWindow::onListClicked() {
 }
 
 void MainWindow::onDeleteClicked() {
-    if (tableWidget->selectedRanges().empty()){
+    const auto ranges = tableWidget->selectedRanges();
+    if (ranges.empty()) {
         statusDisplay->setText("Select an item to delete.");
         return;
     }
 
-    auto selectedTopRow = tableWidget->selectedRanges().takeAt(0).topRow();
-    auto selectedBottomRow = tableWidget->selectedRanges().takeAt(0).bottomRow();
-    if (selectedBottomRow - selectedTopRow > 0) {
+    if (ranges.first().bottomRow() - ranges.first().topRow() > 0) {
         statusDisplay->setText("multiple selection will add");
         return;
     }
-    auto itemCompanyId = tableWidget->takeItem(selectedTopRow,0)->text();
+
+    const int selectedRow = ranges.first().topRow();
+    QTableWidgetItem* item = tableWidget->takeItem(selectedRow, 0);
+    const QString itemCompanyId = item->text();
+    delete item;
 
     QSqlQuery getuser = Database::instance().getUserByCompanyID(itemCompanyId);
-    QString usersdata;
+    QString userId;
     if (getuser.next()) {
-        usersdata = getuser.value(0).toString();
+        userId = getuser.value(0).toString();
     }
 
-    const QString retDB = Database::instance().deleteUser(usersdata.toInt());
-    if (retDB == "DB_OK") {
+    const bool ok = Database::instance().deleteUser(userId.toInt());
+    if (ok) {
         QMessageBox::information(this, "Success", "User deleted!");
+        const QSqlRecord rec = getuser.record();
+        statusDisplay->setText("[Deleted] -|" + getuser.value(rec.indexOf("companyID")).toString() + "-"
+                               + getuser.value(rec.indexOf("name")).toString() + "-"
+                               + getuser.value(rec.indexOf("surname")).toString() + "-"
+                               + getuser.value(rec.indexOf("age")).toString() + "|-");
         refreshDBList();
     } else {
-        QMessageBox::critical(this, "Error", "User is not deleted!\nRetcode: " + retDB);
-        return;
+        QMessageBox::critical(this, "Error", "User is not deleted!\n" + Database::instance().lastError());
     }
-    statusDisplay->setText("[Deleted] -|"+ getuser.value(1).toString() + "-"+ getuser.value(2).toString() +
-                           "-"+ getuser.value(3).toString() + "-"+ getuser.value(4).toString() + "|-");
 }
 
 void MainWindow::refreshDBList() {
     QSqlQuery userbuf = Database::instance().getAllUsers();
     tableWidget->clearContents();
-    auto sizerow = tableWidget->rowCount();
-    for(;sizerow > 0; --sizerow){
+    for (int sizerow = tableWidget->rowCount(); sizerow > 0; --sizerow) {
         tableWidget->removeRow(sizerow - 1);
     }
     while (userbuf.next()) {
-        QString country = userbuf.value(2).toString();
-        user newUser{userbuf.value(1).toString(), userbuf.value(2).toString(), userbuf.value(3).toString(), userbuf.value(4).toString()};
+        const QSqlRecord rec = userbuf.record();
+        user newUser{
+            userbuf.value(rec.indexOf("companyID")).toString(),
+            userbuf.value(rec.indexOf("name")).toString(),
+            userbuf.value(rec.indexOf("surname")).toString(),
+            userbuf.value(rec.indexOf("age")).toString()
+        };
 
-        int newRow = tableWidget->rowCount();
+        const int newRow = tableWidget->rowCount();
         tableWidget->insertRow(newRow);
         tableWidget->setItem(newRow, 0, new QTableWidgetItem(newUser.companyID));
         tableWidget->setItem(newRow, 1, new QTableWidgetItem(newUser.name));
